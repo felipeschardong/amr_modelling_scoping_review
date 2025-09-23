@@ -1,0 +1,170 @@
+# required system commands
+!wget https://github.com/datasets/geo-countries/archive/refs/heads/master.zip -O countries.zip # download countries.zip 
+!unzip -o countries.zip # unzip countries.zip
+
+# required packages
+import geopandas as gpd # geospatial data manipulation
+import pandas as pd   # tabular data manipulation
+import matplotlib.pyplot as plt  # plotting
+import numpy as np  # numerical operations
+import matplotlib.patches as mpatches  # additional plot objects
+from shapely.geometry import Polygon, MultiPolygon  # geometry manipulation
+
+# papers data by country
+data = {
+    "country": [
+        "United States", "France", "United Kingdom", "Germany", "Switzerland",
+        "India", "Portugal", "Belgium", "Netherlands", "Colombia", "Chile",
+        "Egypt", "Namibia", "New Zealand", "Pakistan", "Singapore", "Spain",
+        "Thailand", "Turkey", "Finland"
+    ],
+    "count": [
+        7, 5, 4, 2, 2,
+        2, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1,
+        1, 1, 1
+    ]
+}
+df = pd.DataFrame(data)
+df["country"] = df["country"].replace({
+    "United States": "United States of America"
+})
+
+# load shapefile and join data
+world = gpd.read_file("geo-countries-main/data/countries.geojson")
+country_col = 'ADMIN' if 'ADMIN' in world.columns else 'name'
+
+# remove Antarctica
+world = world[~world[country_col].str.lower().str.contains("antarctica")]
+
+# join with another dataset
+world_data = world.merge(df, how="left", left_on=country_col, right_on="country")
+world_data["count"] = world_data["count"].fillna(0)
+
+# function to remove regions by bounding box
+def remove_region_by_bbox(geometry, bbox):
+    from shapely.geometry import box
+    bbox_poly = box(*bbox)
+    return geometry.difference(bbox_poly)
+
+# define bounding boxes for regions
+ALASKA_BBOX = (-180, 50, -125, 72)       # xmin, ymin, xmax, ymax
+GUIANA_BBOX = (-55, 2, -51, 6)           # xmin, ymin, xmax, ymax
+
+# remove Alaska from the USA
+usa_mask = world_data[country_col] == "United States of America"
+if any(usa_mask):
+    world_data.loc[usa_mask, "geometry"] = world_data.loc[usa_mask, "geometry"].apply(
+        lambda geom: remove_region_by_bbox(geom, ALASKA_BBOX)
+    )
+
+# remove French Guiana from France
+france_mask = world_data[country_col] == "France"
+if any(france_mask):
+    world_data.loc[france_mask, "geometry"] = world_data.loc[france_mask, "geometry"].apply(
+        lambda geom: remove_region_by_bbox(geom, GUIANA_BBOX)
+    )
+
+# Categories and colors
+bins = [0, 1, 2, 4, 5, 7, np.inf]
+labels = [1, 2, 4, 5, 7, 8]
+world_data["count_cat"] = pd.cut(world_data["count"], bins=bins, labels=labels, right=True, include_lowest=True)
+
+colors = {
+    1: "#d9f0d3",  # light green
+    2: "#a6d96a",
+    4: "#66bd63",
+    5: "#1a9850",
+    7: "#006837",
+    8: "#00441b"
+}
+
+def get_color(row):
+    if row["count"] == 0:
+        return "#f0f0f0"  # cinza claro
+    return colors.get(row["count_cat"], "#f0f0f0")
+
+world_data["color"] = world_data.apply(get_color, axis=1)
+
+# map plotting
+fig, ax = plt.subplots(figsize=(15, 10))
+world_data.plot(color=world_data["color"], edgecolor="0.8", linewidth=0.5, ax=ax)
+ax.axis("off")
+
+# legend
+legend_labels = [1, 2, 4, 5, 7]
+patches = [mpatches.Patch(color=colors[l], label=str(l)) for l in legend_labels]
+patches.insert(0, mpatches.Patch(color="#f0f0f0", label="0"))
+plt.legend(handles=patches, title="Number of Articles", loc='lower left', bbox_to_anchor=(0, 0.15), fontsize=15)
+
+# annotations with arrows 
+abbreviations = {
+    "United States of America": "USA",
+    "France": "FRA",
+    "United Kingdom": "UK",
+    "Germany": "GER",
+    "Switzerland": "CHE",
+    "India": "IND",
+    "Portugal": "POR",
+    "Belgium": "BEL",
+    "Netherlands": "NLD",
+    "Colombia": "COL",
+    "Chile": "CHL",
+    "Egypt": "EGY",
+    "Namibia": "NAM",
+    "New Zealand": "NZL",
+    "Pakistan": "PAK",
+    "Singapore": "SGP",
+    "Spain": "ESP",
+    "Thailand": "THA",
+    "Turkey": "TUR",
+    "Finland": "FIN"
+}
+
+# country name position
+offsets = {
+    "United States of America": (2, 20),
+    "France": (-30, 19),
+    "United Kingdom": (-10,25),
+    "Germany": (30, 0),
+    "Switzerland": (-4, -20),
+    "India": (20, 15),
+    "Portugal": (-20, 12),
+    "Belgium": (12, 30),
+    "Netherlands": (49, 13),
+    "Colombia": (2, 15),
+    "Chile": (-5, 15),
+    "Egypt": (-3, -20),
+    "Namibia": (0, 15),
+    "New Zealand": (2, 20),
+    "Pakistan": (7, 20),
+    "Singapore": (25, 10),
+    "Spain": (-25, -5),
+    "Thailand": (27, 13),
+    "Turkey": (20, -25),
+    "Finland": (30, 15),
+}
+
+for idx, row in world_data.iterrows():
+    if row["count"] > 0 and not row["geometry"].is_empty:
+        point = row["geometry"].representative_point()
+        x, y = point.x, point.y
+        country = row["country"]
+        abbr = abbreviations.get(country, country[:3].upper())
+        label = f"{abbr}: {int(row['count'])}"
+        dx, dy = offsets.get(country, (5, 5))
+
+        ax.annotate(
+            label,
+            xy=(x, y),
+            xytext=(x + dx, y + dy),
+            arrowprops=dict(facecolor='black', arrowstyle="->", lw=1),
+            fontsize=14,
+            ha='center',
+            va='center',
+            bbox=dict(boxstyle="round,pad=0.5", fc="white", ec="black", lw=0.9)
+        )
+plt.savefig("mapa_artigos.png", dpi=300, bbox_inches='tight')
+files.download("mapa_artigos.png")
+
+plt.show()
