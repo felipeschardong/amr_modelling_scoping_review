@@ -1,7 +1,7 @@
 # required system commands
 !wget https://github.com/datasets/geo-countries/archive/refs/heads/master.zip -O countries.zip # download countries.zip 
 !unzip -o countries.zip # unzip countries.zip
-conda install -c conda-forge geopandas
+conda install -c conda-forge geopandas proj pyproj
 
 # required packages
 import geopandas as gpd # geospatial data manipulation
@@ -166,6 +166,8 @@ for idx, row in world_data.iterrows():
             bbox=dict(boxstyle="round,pad=0.5", fc="white", ec="black", lw=0.9)
         )
 plt.savefig("mapa_artigos.png", dpi=300, bbox_inches='tight')
-files.download("mapa_artigos.png")
+from IPython.display import Image
+Image("mapa_artigos.png")
+
 
 plt.show()
