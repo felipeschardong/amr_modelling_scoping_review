@@ -1,6 +1,7 @@
 # required system commands
 !wget https://github.com/datasets/geo-countries/archive/refs/heads/master.zip -O countries.zip # download countries.zip 
 !unzip -o countries.zip # unzip countries.zip
+conda install -c conda-forge geopandas
 
 # required packages
 import geopandas as gpd # geospatial data manipulation
