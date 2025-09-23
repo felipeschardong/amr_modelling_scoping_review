@@ -1,0 +1,71 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import matplotlib.patches as mpatches
+import numpy as np
+import os
+
+# Substitua 'questionario_artigos.csv' pelo nome do seu arquivo CSV
+dados_csv = 'questionnaire_answers1.csv'
+
+# importar os dados do arquivo .csv
+dados_csv = '/home/felipe/Downloads/AMR_database/questionnaire_answers1.csv'
+
+# Carregar o CSV em um DataFrame do pandas
+df = pd.read_csv(dados_csv, encoding='ISO-8859-1')
+
+# Coluna com os anos
+coluna_anos = df.columns[2]
+
+# Remover espaços extras se for string (não aplica aqui, pois é numérico)
+if df[coluna_anos].dtype == object:
+    df[coluna_anos] = df[coluna_anos].str.strip().str.lower()
+
+# Contagem dos anos (ordenada)
+contagem_anos = df[coluna_anos].value_counts().sort_index()
+total_artigos = contagem_anos \begin{subfigure}[b]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/mathematical_structure.pdf}
+        \caption{Mathematical structure}
+        \label{fig:mathematical_structure}
+    \end{subfigure}.sum()
+porcentagens = (contagem_anos / total_artigos) * 100
+
+# Estilo e cores
+sns.set_style('white')
+cores = plt.get_cmap('').colors
+
+# Criando o gráfico
+plt.figure(figsize=(12, 8))
+x_positions = np.arange(len(contagem_anos))
+bars = plt.bar(x_positions, contagem_anos.values, color=cores, width=0.6)
+
+# Anotações sobre as barras
+for bar, perc, num_artigos in zip(bars, porcentagens, contagem_anos):
+    yval = bar.get_height()
+    plt.text(bar.get_x() + bar.get_width()/2.0, yval + 0.45, f'{perc:.1f}%',
+             va='bottom', ha='center', fontsize=30, color='black', weight='bold')
+    plt.text(bar.get_x() + bar.get_width()/2.0, yval + 0.05, f'(n = {num_artigos})',
+             va='bottom', ha='center', fontsize=25, color='black')
+
+# Eixo y
+plt.ylabel('Number of Articles', fontsize=30, weight='bold', color='darkblue')
+plt.yticks(np.arange(0, contagem_anos.max()+3, 2), fontsize=25, weight='bold')
+plt.ylim(0, contagem_anos.max()+1)
+
+# Eixo x com anos visíveis
+plt.xticks(ticks=x_positions, labels=contagem_anos.index.astype(str), fontsize=30, weight='bold')
+
+# Sem grade, sem legenda
+plt.grid(False)
+
+# Ajustando o layout do gráfico para ficar enquadrado
+plt.tight_layout()
+
+downloads_path = os.path.join(os.path.expanduser('~'), 'Downloads')
+file_path = os.path.join(downloads_path, 'papers_by_year.pdf')
+
+plt.savefig(file_path, bbox_inches='tight', dpi=300)
+
+# Exibindo o gráfico
+plt.show()
