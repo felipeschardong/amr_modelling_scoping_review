@@ -1,0 +1,133 @@
+# required packages
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import matplotlib.patches as mpatches
+import numpy as np
+import os
+
+# draws a simple overbrace
+def draw_overbrace(ax, x0, x1, y, tick_height=0.4, line_width=2.0, text=None, text_offset=0.25):
+    ax.plot([x0, x1], [y, y], lw=line_width, color='black', clip_on=False)
+    ax.plot([x0, x0], [y, y - tick_height], lw=line_width, color='black', clip_on=False)
+    ax.plot([x1, x1], [y, y - tick_height], lw=line_width, color='black', clip_on=False)
+    if text is not None:
+        xc = (x0 + x1) / 2.0
+        ax.text(xc, y + text_offset, text, ha='center', va='bottom',
+                fontsize=21, weight='bold', color='black', clip_on=False)
+
+# data
+data_csv = '# put here the path where you saved 'questionnaire_answers1.csv' on your computer'
+df = pd.read_csv(data_csv, encoding='ISO-8859-1')
+
+# target column (adjust as needed)
+
+model_column = df.columns[8]
+
+# standardization (only if string)
+if df[model_column].dtype == object:
+    df[model_column] = df[model_column].str.strip().str.lower()
+
+# counts by category (includes NaN)
+count_models = df[model_column].value_counts(dropna=False)
+
+# totals and percentages
+total_papers = int(count_models.sum())
+counts = count_models.values.astype(int)
+percs = (counts / total_papers) * 100.0
+
+# graph style
+sns.set_style('white')
+cores = plt.get_cmap('tab20').colors  # 20 colors
+
+# bars
+fig, ax = plt.subplots(figsize=(12, 8))
+bar_width = 0.6
+x_positions = np.arange(len(count_models)) * 1.0
+bars = ax.bar(x_positions, counts, color=cores, width=bar_width)
+
+# group blocks with the same number of articles
+blocks = []
+i = 0
+n = len(counts)
+while i < n:
+    j = i
+    while j + 1 < n and counts[j + 1] == counts[i]:
+        j += 1
+    blocks.append((i, j, counts[i], j - i + 1))
+    i = j + 1
+
+# annotations: key for repeating blocks; simple annotation for blocks of size 1
+gap = 0.6 # vertical distance of the key line above the top of the bars
+tick_h = 0.35 # height of the key's "legs"
+text_off = 0.25 # text offset above the key line
+needed_top = 0.0 # to adjust ylim later
+
+for (i0, i1, val, size) in blocks:
+   # horizontal boundaries of the group (outer edge of the extreme bars)
+    x_left  = x_positions[i0] - bar_width / 2.0
+    x_right = x_positions[i1] + bar_width / 2.0
+
+    y_top = val + gap
+
+    if size >= 2:
+        total_n = int(val * size)
+        perc_n = (total_n / total_papers) * 100.0
+        label = f'{perc_n:.1f}%\n(n = {total_n})'
+        draw_overbrace(ax, x_left, x_right, y_top, tick_height=tick_h, text=label, text_offset=text_off)
+        needed_top = max(needed_top, y_top + text_off + 0.6)
+    else:
+        bar_center = x_positions[i0]
+        perc_single = (val / total_papers) * 100.0
+        ax.text(bar_center, val + 0.9, f'{perc_single:.1f}%',
+                ha='center', va='bottom', fontsize=21, color='black', weight='bold')
+        ax.text(bar_center, val + 0.05, f'(n = {val})',
+                ha='center', va='bottom', fontsize=19, color='black', weight='bold')
+        needed_top = max(needed_top, val + 0.8 + 0.6)
+
+# axes, labels, limits
+ax.set_ylabel('Number of Articles', fontsize=40, weight='bold', color='darkblue')
+ax.set_xticks([])  # sem rótulos no eixo x
+
+# ajusted ylim
+current_top = 20
+current_top = max(10, current_top)
+ax.set_ylim(0, current_top)
+
+# Ticks y axe
+ytop_int = int(np.ceil(current_top))
+ax.set_yticks(np.arange(0, ytop_int + 1, 2))
+ax.tick_params(axis='y', labelsize=30)
+for tick in ax.get_yticklabels():
+    tick.set_fontweight('bold')
+#ax.yaxis.set_visible(False)
+
+ax.grid(False)
+
+# creating handles for the caption
+#legenda_labels = ['Deterministic', 'Stochastic', 'Both']  # (df.columns[3])
+#legenda_labels = ['Ordinary Differential Equations', 'Stochastic Differential Equations', 'Gillespie Algorithm', 'Ordinary Differential Equations and \nGillespie Algorithm','Partial Differential Equations', 'Integro-Differential Equations and \nPartial Differential Equations'] #(df.columns[4])
+#legenda_labels = ['Human', 'General','In-Vitro', 'Animal', 'Human or Animal', 'N/A - Not Applicable']  #(df.columns[5])
+#legenda_labels = ['Within-Host', 'Laboratory', 'Community','General', 'Hospital/ICUs', 'Within-Host and \nBetween-Host', 'Between-Host', 'One-Health']  # (df.columns[6])
+#legenda_labels = ['Bacteria','General', 'Virus']  # (df.columns[7])
+legenda_labels = ['Mutation', 'Mutation and HGT - Conjugation', 'N/A - Not Applicable','Selection and Transmission','HGT - Conjugation','Selection','HGT - Conjugation and Transformation','HGT - Transduction', 'Mutation and Transmission', 'Mutation and Recombination', 'Transmission']  # (df.columns[8]) tab20
+#legenda_labels = ['N/A - Not Applicable', 'Pharmacokinetics/\nPharmacodynamics', 'Pharmacodynamics', 'Pharmacokinetics']  # (df.columns[9])
+#legenda_labels = ['N/A - Not Applicable', r'$P.\ aeruginosa$',r'$E.\ coli$', r'$S.\ aureus$', r'$A.\ baumannii$', '$C.\ difficile$, $K.\ pneumoniae$,\n$E.\ coli$ and $S.\ aureus$']  #(df.columns[11])
+#legenda_labels = ['Monotherapy', 'Polytherapy', 'N/A - Not Applicable', 'Both']  # (df.columns[12])
+k = min(len(legenda_labels), len(cores))
+handles = [mpatches.Patch(color=cores[i], label=legenda_labels[i]) for i in range(k)]
+
+legend = ax.legend(handles=handles, loc='upper right', bbox_to_anchor=(1, 1),
+                   framealpha=1, prop={'weight': 'bold', 'size':21, 'family': 'sans-serif'},
+                   frameon=True)
+legend.get_frame().set_linewidth(1.5)
+legend.get_frame().set_edgecolor('black')
+
+plt.tight_layout()
+
+# save
+downloads_path = os.path.join(os.path.expanduser('~'), 'Downloads')
+file_path = os.path.join(downloads_path, 'acquired_resistance.pdf')
+plt.savefig(file_path, bbox_inches='tight', dpi=300)
+
+plt.show()
