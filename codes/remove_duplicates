@@ -1,0 +1,110 @@
+import pandas as pd
+import os
+import string
+
+def load_and_prepare_data(file_path: str, source_name: str) -> pd.DataFrame:
+    """
+    Load and standardize bibliographic data from a csv file.
+    """
+    
+    # attempt to read file using UTF-8 or fall back to Latin-1 if necessary
+    try:
+        df = pd.read_csv(file_path, encoding='utf-8', engine='python')
+    except UnicodeDecodeError:
+        df = pd.read_csv(file_path, encoding='latin-1', engine='python')
+    
+    # standardize column names and select relevant fields
+    df.columns = df.columns.str.strip().str.lower()
+    column_mapping = {'title': 'title', 'year': 'year', 'doi': 'doi'}
+    df = df.rename(columns=column_mapping)[['title', 'year', 'doi']]
+    
+    # convert 'year' to integer, handling invalid or missing values
+    df['year'] = pd.to_numeric(df['year'], errors='coerce').fillna(0).astype(int)
+    df['year'] = df['year'].replace(0, pd.NA)  
+    
+    # add source identifier and ensure DOI is string type
+    df['source'] = source_name
+    df['doi'] = df['doi'].fillna('').astype(str)
+    
+    return df
+
+
+def create_article_key(df: pd.DataFrame) -> pd.Series:
+    """
+    Create a unique article key for deduplication.
+    """
+    # normalize titles: lowercase, remove punctuation, strip spaces
+    df['clean_title'] = (
+        df['title']
+        .str.lower()
+        .str.translate(str.maketrans('', '', string.punctuation))
+        .str.strip()
+    )
+    
+    # generate unique key based on DOI or (clean_title + year)
+    return df.apply(
+        lambda x: x['doi'].lower().strip() if x['doi'] not in ['', 'nan']
+        else f"{x['clean_title']}_{x['year']}",
+        axis=1
+    )
+
+
+def get_unique_articles(*dfs: pd.DataFrame) -> dict:
+    """
+    Merge multiple bibliographic sources and remove duplicates based on a unified article key.
+
+    Priority order determines which source to keep in case of duplicates:
+        WoS > PubMed > Scopus
+    """
+    priority_order = {'WoS': 1, 'PubMed': 2, 'Scopus': 3}
+    
+    # concatenate all sources and assign priority level
+    combined = pd.concat([
+        df.assign(priority=priority_order[df['source'].iloc[0]])
+        for df in dfs
+    ])
+    
+    # create unique article key and drop duplicates based on priority
+    combined['article_key'] = create_article_key(combined)
+    combined = combined.sort_values('priority').drop_duplicates('article_key')
+    
+    # primary sort by year, secondary by title
+    combined['sort_title'] = combined['title'].str.lower()
+    combined = combined.sort_values(by=['year', 'sort_title'], na_position='last')
+    
+    # return individual DataFrames for each source
+    return {
+        source: combined[combined['source'] == source]
+                .drop(columns=['priority', 'clean_title', 'sort_title'])
+                .sort_values(by=['year', 'title'], na_position='last')
+        for source in priority_order
+    }
+
+
+if __name__ == "__main__":
+    # define base directory and file names
+    BASE_PATH = "/home/felipe/Downloads"
+    SOURCES = {'WoS': 'wos.csv', 'PubMed': 'pubmed.csv', 'Scopus': 'scopus.csv'}
+    
+    # load, clean, and prepare all data sources
+    loaded_data = []
+    for source, file in SOURCES.items():
+        path = os.path.join(BASE_PATH, file)
+        loaded_data.append(load_and_prepare_data(path, source))
+    
+    # combine all datasets and get deduplicated, ordered results
+    unique_articles = get_unique_articles(*loaded_data)
+    
+    # export results to CSV with consistent sorting
+    for source, df in unique_articles.items():
+        output_path = os.path.join(BASE_PATH, f'ordered_unique_{source.lower()}.csv')
+        
+        # ensure final order (year → title, case-insensitive)
+        df = df.sort_values(
+            by=['year', 'title'],
+            key=lambda x: x.str.lower() if x.name == 'title' else x,
+            na_position='last'
+        )
+        
+        df.to_csv(output_path, index=False)
+        print(f"{source}: {len(df)} articles | Sorted by: Year → Title | Saved to: {output_path}")
