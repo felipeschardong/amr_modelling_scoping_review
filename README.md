@@ -10,26 +10,36 @@ The goal is to map the types of models used in AMR research, the epidemiological
 
 Our analysis identified major trends and gaps in AMR mathematical modeling. Key results are summarized below:
 
-- **Model Type and Context (Section 3.1)**  
+- **Model Type and Context**  
   Figure 4 highlights the predominance of **deterministic ODE models**, revealing limitations in capturing the stochastic dynamics of AMR.  
 
   <table>
 <tr>
 <td align="center">
   <img src="results/Fig.4-a.png" width="350"/><br>
-  <b></b> Model types
+  <b>(a)</b> Model types
 </td>
 <td align="center">
-  <img src="results/Fig.4-b.png" width="320"/><br>
-  <b></b> Mathematical structures
+  <img src="results/Fig.4-b.png" width="315"/><br>
+  <b>(b)</b> Mathematical structures
 </td>
 </tr>
 </table>
 
-- 🔧 **Model Construction and Parameterization (Section 3.2)**  
+- **Model Construction and Parameterization (Section 3.2)**  
   Figure 7 shows mechanisms of resistance acquisition and the limited use of **PK/PD modeling**, suggesting simplifications that may reduce biological realism.  
-  ![Figure 7](results/Fig7.png)  
-  *Mechanisms of AMR acquisition and integration of PK/PD.*
+    <table>
+<tr>
+<td align="center">
+  <img src="results/Fig.7-a.png" width="350"/><br>
+  <b>(a)</b> Mechanisms of acquired resistance
+</td>
+<td align="center">
+  <img src="results/Fig.7-b.png" width="315"/><br>
+  <b>(b)</b> PK/PD modelling
+</td>
+</tr>
+</table>
 
 - 📈 **Model Outputs and Validation (Section 3.3)**  
   Figure 8 illustrates the focus on **monotherapy strategies**, despite the clinical relevance of combination therapies.  
