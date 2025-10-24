@@ -10,10 +10,21 @@ The goal is to map the types of models used in AMR research, the epidemiological
 
 Our analysis identified major trends and gaps in AMR mathematical modeling. Key results are summarized below:
 
-- 📊 **Model Type and Context (Section 3.1)**  
+- **Model Type and Context (Section 3.1)**  
   Figure 4 highlights the predominance of **deterministic ODE models**, revealing limitations in capturing the stochastic dynamics of AMR.  
-  ![Figure 4](results/Fig4.png)  
-  *Distribution of model types and mathematical structures.*
+
+  <table>
+<tr>
+<td align="center">
+  <img src="results/Fig.4-a.png" width="350"/><br>
+  <b></b> Model types
+</td>
+<td align="center">
+  <img src="results/Fig.4-b.png" width="320"/><br>
+  <b></b> Mathematical structures
+</td>
+</tr>
+</table>
 
 - 🔧 **Model Construction and Parameterization (Section 3.2)**  
   Figure 7 shows mechanisms of resistance acquisition and the limited use of **PK/PD modeling**, suggesting simplifications that may reduce biological realism.  
