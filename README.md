@@ -16,7 +16,7 @@ Our analysis identified major trends and gaps in AMR mathematical modeling. Key 
 
 <!-- 3.1 -->
 <td align="center" valign="top" width="33%">
-<b>3.1 Model Type and Context</b><br>
+<b>3.1 Type and Context</b><br>
 Deterministic models dominate, with limited stochastic representation..<br><br>
 <img src="results/Fig.4-a.png" width="300"/><br>
 <small><b>Model type</b></small>
@@ -24,15 +24,15 @@ Deterministic models dominate, with limited stochastic representation..<br><br>
 
 <!-- 3.2 -->
 <td align="center" valign="top" width="33%">
-<b>3.2 Model Construction and Parameterization</b><br>
-Highlights the limited use of PK/PD modeling, suggesting simplifications that may reduce biological realism.<br><br>
+<b>3.2 Construction and Parameterization</b><br>
+Limited use of PK/PD models reduces biological realism and aplications.<br><br>
 <img src="results/Fig.7-b.png" width="300"/><br>
 <small><b>PK/PD modelling</b></small>
 </td>
 
 <!-- 3.3 -->
 <td align="center" valign="top" width="33%">
-<b>3.3 Model Outputs and Validation</b><br>
+<b>3.3 Outputs and Validation</b><br>
 Focus on monotherapy, despite the relevance of combination therapies.<br><br>
 <img src="results/Fig.8.png" width="300"/><br>
 <small><b>Treatment type</b></small>
