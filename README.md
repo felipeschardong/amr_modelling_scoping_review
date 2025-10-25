@@ -25,7 +25,7 @@ Deterministic models dominate, with limited stochastic representation..<br><br>
 <!-- 3.2 -->
 <td align="center" valign="top" width="33%">
 <b>3.2 Construction and Parameterization</b><br>
-Limited use of PK/PD models reduces biological realism and aplications.<br><br>
+Limited use of PK/PD models reduces biological realism.<br><br>
 <img src="results/Fig.7-b.png" width="300"/><br>
 <small><b>PK/PD modelling</b></small>
 </td>
