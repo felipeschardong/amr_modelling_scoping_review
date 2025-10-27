@@ -7,7 +7,7 @@ df = pd.read_csv('path where the questionnaire_answers.csv file is saved')
 model_types = df.iloc[:, '''column number'''].unique()
 
 # Displays model types and associated IDs
-for types in model_types:
+for type in model_types:
     filtered_papers = df[df.iloc[:, '''column number'''] == type]
 
     # Displays the IDs of filtered papers
