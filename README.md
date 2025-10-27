@@ -17,7 +17,7 @@ Our analysis identified major trends and gaps in AMR mathematical modeling. Key 
 <!-- 3.1 -->
 <td align="center" valign="top" width="33%">
 <b>3.1 Type and Context</b><br>
-Deterministic models dominate, with limited stochastic representation..<br><br>
+Deterministic models dominate, with limited stochastic representation.<br><br>
 <img src="results/Fig.4-a.png" width="300"/><br>
 <small><b>Model type</b></small>
 </td>
@@ -76,6 +76,7 @@ Each script in the [`codes/`](codes/) folder corresponds to a specific analytica
 | `Fig.2.py` | Generates **Figure 2**, showing the **distribution of articles by publication year**. | `questionnaire_answers.csv` |
 | `Fig.3.py` | Generates **Figure 3**, showing the **national affiliation of the first author** for all included articles. The **data source is defined directly within the script**. | Defined inside script |
 | `Fig.4-Fig.8.py` | Generates **Figures 4–8**, summarizing **modeling characteristics, epidemiological contexts, and research trends** identified in the review. | `questionnaire_answers.csv` |
+| `table_2-3.py` | Extracts the information used to construct **Tables 2 and 3**, listing unique entries (e.g., fitness cost, economic impact) from any selected column of questionnaire_answers.csv together with their corresponding paper IDs. | `questionnaire_answers.csv` |
 
 ### 5. Running the Analysis
 
@@ -97,6 +98,7 @@ To reproduce the full workflow from data cleaning to visualization, follow these
    - `Fig.2.py` → Generate **Figure 2** (distribution of articles by publication year; uses `questionnaire_answers.csv`)  
    - `Fig.3.py` → Generate **Figure 3** (national affiliation of first author; data source defined inside the script)  
    - `Fig.4-Fig.8.py` → Generate **Figures 4–8** (model characteristics and trends; use `questionnaire_answers.csv`)
+   - `table_2-3.py` → Extract data for **Tables 2 and 3** from questionnaire_answers.csv.
 
 6. **Check the outputs** in the [`results/`](results/) folder, which contains all final tables, figures, and summary visualizations.
 
