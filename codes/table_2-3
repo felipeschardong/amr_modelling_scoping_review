@@ -4,16 +4,16 @@ import pandas as pd
 df = pd.read_csv('path where the questionnaire_answers.csv file is saved')
 
 # Gets the unique model types of each column. Replace column number with the desired column information in questionnaire_answers.csv
-model_types = df.iloc[:, column number].unique()
+model_types = df.iloc[:, '''column number'''].unique()
 
 # Displays model types and associated IDs
 for types in model_types:
-    filtered_papers = df[df.iloc[:, column number] == type]
+    filtered_papers = df[df.iloc[:, '''column number'''] == type]
 
     # Displays the IDs of filtered papers
     ids_papers = filtered_papers.iloc[:, 0].tolist()
 
     # Displays the model type and associated IDs
-    print(f"Model type: {tipo}")
+    print(f"Model type: {type}")
     print(f"Papers IDs: {ids_papers}")
     print("-" * 40)
